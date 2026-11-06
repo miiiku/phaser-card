@@ -1,0 +1,71 @@
+{
+  "canvas": {
+    "width": 1024,
+    "height": 1536
+  },
+  "order_back_to_front": [
+    "background.png",
+    "rear-decoration.png",
+    "subject.png",
+    "foreground-decoration.png",
+    "frame.png"
+  ],
+  "layers": {
+    "background.png": {
+      "alpha_min": 255,
+      "alpha_max": 255,
+      "visible_fraction": 1.0,
+      "alpha_bbox": [
+        0,
+        0,
+        1024,
+        1536
+      ]
+    },
+    "rear-decoration.png": {
+      "alpha_min": 0,
+      "alpha_max": 254,
+      "visible_fraction": 0.046687,
+      "alpha_bbox": [
+        33,
+        31,
+        984,
+        1430
+      ]
+    },
+    "subject.png": {
+      "alpha_min": 0,
+      "alpha_max": 254,
+      "visible_fraction": 0.495118,
+      "alpha_bbox": [
+        57,
+        32,
+        945,
+        1520
+      ]
+    },
+    "foreground-decoration.png": {
+      "alpha_min": 0,
+      "alpha_max": 254,
+      "visible_fraction": 0.092916,
+      "alpha_bbox": [
+        0,
+        19,
+        1004,
+        1536
+      ]
+    },
+    "frame.png": {
+      "alpha_min": 0,
+      "alpha_max": 254,
+      "visible_fraction": 0.226011,
+      "alpha_bbox": [
+        0,
+        0,
+        1013,
+        1509
+      ]
+    }
+  },
+  "warnings": []
+}

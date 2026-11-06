@@ -1,0 +1,4 @@
+interface:
+  display_name: "收藏卡牌图像生成器"
+  short_description: "输入主体，生成便于背景分离的半身分层收藏卡牌与提示词"
+  default_prompt: "使用 $collectible-card-prompt，根据我输入的主体生成无地面接触、便于分层提取的 1024×1536 卡牌图片与提示词，并保存到 draft 目录。"
