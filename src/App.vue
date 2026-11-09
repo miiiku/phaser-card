@@ -3,6 +3,7 @@ import Phaser from 'phaser';
 import { ref, toRaw } from 'vue';
 import type { MainMenu } from './game/scenes/MainMenu';
 import PhaserGame from './PhaserGame.vue';
+import HelloWorld from './components/HelloWorld.vue';
 
 //  References to the PhaserGame component (game and scene are exposed)
 const phaserRef = ref();
@@ -56,5 +57,8 @@ const currentScene = (scene: MainMenu) => {
   <div>
     <button class="button" @click="changeScene">Change Scene</button>
     <button class="button" @click="addSprite">Add New Sprite</button>
+  </div>
+  <div class="fixed top-0 right-0 w-[50dvw] h-[50dvh]">
+    <HelloWorld class="size-full" />
   </div>
 </template>

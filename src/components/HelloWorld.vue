@@ -32,7 +32,7 @@ const cardPresets: CardPreset = {
   frame: { src: '/undead-card-layers/frame.png', label: "边框" },
   layers: [
     { src: '/undead-card-layers/background.png', depth: -5, stack: 1, scale: 1.08, label: "背景" },
-    { src: '/undead-card-layers/rear-decoration.png', depth: -2, stack: 2, origin: '50% 20%', rotate: [-2.5, -2.5, -5, -1], scale: 1.09, label: "后景装饰" },
+    { src: '/undead-card-layers/rear-decoration.png', depth: -2, stack: 2, origin: '50% 20%', rotate: [0, 0, -5, -1], scale: 1.09, label: "后景装饰" },
     { src: '/undead-card-layers/subject.png', depth: -0.8, stack: 3, scale: 1.2, label: "角色主体" },
     { src: '/undead-card-layers/foreground-decoration.png', depth: 1, stack: 4, label: "前景装饰" },
   ],
@@ -110,7 +110,7 @@ onBeforeUnmount(() => cancelAnimationFrame(animationFrame))
 </script>
 
 <template>
-  <div class="flex items-center justify-center w-dvw h-dvh">
+  <div class="flex items-center justify-center">
     <div class="absolute top-0">
       <div>x: {{ pointer.x }}</div>
       <div>y: {{ pointer.y }}</div>

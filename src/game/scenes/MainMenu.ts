@@ -35,8 +35,8 @@ interface LayerPreset {
   key: string;
   depth: number;
   scale: number;
+  // [originX, originY, rzX, rzY]：鼠标在 X/Y 方向移动时，图层绕 Z 轴旋转的最大角度（不考虑绕 X/Y 轴旋转）。
   rotate?: [number, number, number, number];
-  originY?: number;
 }
 
 interface CardLayer extends LayerPreset, CardSurface {}
@@ -48,8 +48,7 @@ const LAYER_PRESETS: LayerPreset[] = [
     key: "card-rear-decoration",
     depth: -2,
     scale: 1.09,
-    rotate: [-2.5, -2.5, -5, -1],
-    originY: 0.2,
+    rotate: [0.5, 0.2, -5, -0.5],
   },
   { key: "card-subject", depth: -0.8, scale: 1.2 },
   { key: "card-foreground-decoration", depth: 1, scale: 1 },
@@ -67,6 +66,8 @@ export class MainMenu extends Scene {
   // 复用矩阵和临时顶点，避免在每一帧中反复创建对象。
   private cardRotationMatrix = new PhaserMath.Matrix4();
   private transformedPoint = new PhaserMath.Vector3();
+  private layerTransformMatrix = new GameObjects.Components.TransformMatrix();
+  private transformedUvPoint = new PhaserMath.Vector2();
   private hoverAmount = 0;
   private isHovering = false;
 
@@ -96,10 +97,11 @@ export class MainMenu extends Scene {
     this.glareMaskImage = this.textures
       .get("card-glare-mask")
       .getSourceImage() as HTMLImageElement;
+
     this.createCard();
     this.createInteraction();
-
     this.updateCardVisuals();
+
     EventBus.emit("current-scene-ready", this);
   }
 
@@ -187,18 +189,13 @@ export class MainMenu extends Scene {
   }
 
   private createMesh(texture: string, depth: number, clipped: boolean): CardSurface {
-    const left = clipped
-      ? -CARD_WIDTH / 2 + CARD_WIDTH * CLIP.left
-      : -CARD_WIDTH / 2;
-    const right = clipped
-      ? CARD_WIDTH / 2 - CARD_WIDTH * CLIP.right
-      : CARD_WIDTH / 2;
-    const top = clipped
-      ? -CARD_HEIGHT / 2 + CARD_HEIGHT * CLIP.top
-      : -CARD_HEIGHT / 2;
-    const bottom = clipped
-      ? CARD_HEIGHT / 2 - CARD_HEIGHT * CLIP.bottom
-      : CARD_HEIGHT / 2;
+    const halfWidth = CARD_WIDTH / 2
+    const haldHeight = CARD_HEIGHT / 2
+    
+    const left = clipped ? -halfWidth + CARD_WIDTH * CLIP.left : -halfWidth;
+    const right = clipped ? halfWidth - CARD_WIDTH * CLIP.right : halfWidth;
+    const top = clipped ? -haldHeight + CARD_HEIGHT * CLIP.top : -haldHeight;
+    const bottom = clipped ? haldHeight - CARD_HEIGHT * CLIP.bottom : haldHeight;
 
     const geometry = this.createGridGeometry(left, top, right, bottom);
 
@@ -277,36 +274,43 @@ export class MainMenu extends Scene {
   }
 
   private updateLayerMesh(layer: CardLayer) {
-    const [rx = 0, ry = 0, rzX = 0, rzY = 0] = layer.rotate ?? [];
-    const localRotation = PhaserMath.DegToRad(
-      this.pointer.x * rzX + this.pointer.y * rzY,
-    );
-    const cosZ = Math.cos(-localRotation);
-    const sinZ = Math.sin(-localRotation);
-    const originY = ((layer.originY ?? 0.5) - 0.5) * CARD_HEIGHT;
+    // rzX 鼠标左右移动时，绕 Z 轴旋转的角度
+    // rzY 鼠标上下移动时，绕 Z 轴旋转的角度
+    const [centerX = 0.5, centerY = 0.5, rzX = 0, rzY = 0] = layer.rotate ?? [];
+    const originX = (centerX - 0.5) * CARD_WIDTH;
+    const originY = (centerY - 0.5) * CARD_HEIGHT;
+    const localRotation = PhaserMath.DegToRad(this.pointer.x * rzX + this.pointer.y * rzY);
+
+    // layer.depth = 最大偏移百分比；
+    // this.pointer.x * layer.depth = 偏移百分比；
+    // 偏移百分比 * CARD_WIDTH / 100 = 固定偏移值；
     const shiftX = (this.pointer.x * layer.depth * CARD_WIDTH) / 100;
     const shiftY = (this.pointer.y * layer.depth * CARD_HEIGHT) / 100;
-    const localScaleX = Math.max(
-      0.98,
-      Math.cos(PhaserMath.DegToRad(this.pointer.x * ry)),
-    );
-    const localScaleY = Math.max(
-      0.98,
-      Math.cos(PhaserMath.DegToRad(this.pointer.y * rx)),
-    );
+
+    // 组合图层的正向二维变换：以[originX, originY]为中心旋转，再进行视差平移。
+    // 链式调用的矩阵实际作用顺序是从最后一步向前应用。
+    this.layerTransformMatrix
+      .loadIdentity()
+      .translate(shiftX + originX, shiftY + originY)
+      .rotate(localRotation)
+      .translate(-originX, -originY);
 
     for (let index = 0; index < layer.points.length; index += 1) {
       const point = layer.points[index];
-      // 网格边界保持不动，只改变 UV 采样位置，就能让图片在裁切区域内产生视差。
-      const sourceX = point.x - shiftX;
-      const sourceY = point.y - shiftY - originY;
-      const rotatedX = (sourceX * cosZ - sourceY * sinZ) / localScaleX;
-      const rotatedY = (sourceX * sinZ + sourceY * cosZ) / localScaleY + originY;
       const offset = index * 4;
 
+      // 网格边界固定不动，所以要使用逆矩阵，从显示位置反查原图片的采样位置。
+      this.layerTransformMatrix.applyInverse(
+        point.x,
+        point.y,
+        this.transformedUvPoint,
+      );
+
       // UV 使用 0～1 表示整张纹理；0.5 是图片中心。
-      layer.mesh.vertices[offset + 2] = 0.5 + rotatedX / (CARD_WIDTH * layer.scale);
-      layer.mesh.vertices[offset + 3] = 0.5 + rotatedY / (CARD_HEIGHT * layer.scale);
+      layer.mesh.vertices[offset + 2] =
+        0.5 + this.transformedUvPoint.x / (CARD_WIDTH * layer.scale);
+      layer.mesh.vertices[offset + 3] =
+        0.5 + this.transformedUvPoint.y / (CARD_HEIGHT * layer.scale);
     }
 
     this.updateProjectedMesh(layer);
