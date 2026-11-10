@@ -1,4 +1,4 @@
 interface:
   display_name: "卡牌分层资源拆分器"
-  short_description: "将卡牌概念图拆成同尺寸透明图层，并修复主体与背景的遮挡区域"
-  default_prompt: "使用 $card-layer-splitter，把我提供的卡牌概念图拆成可直接用于程序的同尺寸透明分层资源。"
+  short_description: "拆分卡面图层，并生成对齐的 mask 与透明卡背"
+  default_prompt: "使用 $card-layer-splitter，把我提供的卡牌正面和卡背设计稿拆成同尺寸程序资源，并生成中央实心 mask 与透明卡背。"

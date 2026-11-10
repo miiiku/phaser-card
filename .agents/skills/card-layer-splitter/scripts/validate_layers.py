@@ -20,6 +20,8 @@ ORDER = (
     "frame.png",
 )
 REQUIRED = {"background.png", "subject.png", "frame.png"}
+MASK = "mask.png"
+CARD_BACK = "card-back.png"
 
 
 def alpha_stats(image: Image.Image) -> dict[str, object]:
@@ -37,7 +39,7 @@ def alpha_stats(image: Image.Image) -> dict[str, object]:
 
 
 def validate(job: Path) -> None:
-    missing = sorted(name for name in REQUIRED if not (job / name).is_file())
+    missing = sorted(name for name in REQUIRED | {MASK, CARD_BACK} if not (job / name).is_file())
     if missing:
         raise RuntimeError(f"Missing required layers: {', '.join(missing)}")
 
@@ -82,6 +84,52 @@ def validate(job: Path) -> None:
             manifest["layers"][name] = stats
             composite.alpha_composite(image)
 
+    mask_path = job / MASK
+    with Image.open(mask_path) as opened:
+        if opened.format != "PNG":
+            raise RuntimeError("mask.png is not PNG")
+        mask = opened.convert("RGBA")
+        if mask.size != (WIDTH, HEIGHT):
+            raise RuntimeError(f"Wrong canvas for mask.png: {mask.size}")
+        mask_stats = alpha_stats(mask)
+        if mask_stats["alpha_min"] != 0 or mask_stats["alpha_max"] != 255:
+            raise RuntimeError("mask.png must contain transparent exterior and opaque card pixels")
+        center_alpha = mask.getchannel("A").getpixel((WIDTH // 2, HEIGHT // 2))
+        if center_alpha != 255:
+            raise RuntimeError("mask.png central window must be filled and fully opaque")
+        alpha = mask.getchannel("A")
+        if alpha.getbbox() is None:
+            raise RuntimeError("mask.png is empty")
+        frame_bbox = manifest["layers"]["frame.png"]["alpha_bbox"]
+        if mask_stats["alpha_bbox"] != frame_bbox:
+            raise RuntimeError(
+                f"mask.png outer registration differs from frame.png: "
+                f"{mask_stats['alpha_bbox']} != {frame_bbox}"
+            )
+        rgb = mask.convert("RGB")
+        for color, opacity in zip(rgb.getdata(), alpha.getdata()):
+            if opacity and color != (255, 255, 255):
+                raise RuntimeError("mask.png visible pixels must be pure white")
+        manifest["mask"] = {
+            **mask_stats,
+            "role": "auxiliary full-card effect mask; excluded from composite",
+        }
+
+    card_back_path = job / CARD_BACK
+    with Image.open(card_back_path) as opened:
+        if opened.format != "PNG":
+            raise RuntimeError("card-back.png is not PNG")
+        card_back = opened.convert("RGBA")
+        if card_back.size != (WIDTH, HEIGHT):
+            raise RuntimeError(f"Wrong canvas for card-back.png: {card_back.size}")
+        card_back_stats = alpha_stats(card_back)
+        if card_back.getchannel("A").tobytes() != mask.getchannel("A").tobytes():
+            raise RuntimeError("card-back.png alpha must match mask.png exactly")
+        manifest["card_back"] = {
+            **card_back_stats,
+            "role": "complete reverse-side asset; excluded from front composite",
+        }
+
     composite.convert("RGB").save(job / "composite-preview.png", format="PNG", optimize=True)
     (job / "layer-manifest.json").write_text(
         json.dumps(manifest, indent=2, ensure_ascii=False) + "\n", encoding="utf-8"
@@ -90,6 +138,11 @@ def validate(job: Path) -> None:
     for name in present:
         stats = manifest["layers"][name]
         print(f"- {name}: visible={stats['visible_fraction']} bbox={stats['alpha_bbox']}")
+    print(f"- mask.png: visible={mask_stats['visible_fraction']} bbox={mask_stats['alpha_bbox']}")
+    print(
+        f"- card-back.png: visible={card_back_stats['visible_fraction']} "
+        f"bbox={card_back_stats['alpha_bbox']}"
+    )
     for warning in manifest["warnings"]:
         print(f"WARNING: {warning}")
 

@@ -1,0 +1,83 @@
+{
+  "canvas": {
+    "width": 1024,
+    "height": 1536
+  },
+  "order_back_to_front": [
+    "background.png",
+    "rear-decoration.png",
+    "subject.png",
+    "foreground-decoration.png",
+    "frame.png"
+  ],
+  "layers": {
+    "background.png": {
+      "alpha_min": 255,
+      "alpha_max": 255,
+      "visible_fraction": 1.0,
+      "alpha_bbox": [
+        0,
+        0,
+        1024,
+        1536
+      ]
+    },
+    "rear-decoration.png": {
+      "alpha_min": 0,
+      "alpha_max": 254,
+      "visible_fraction": 0.283234,
+      "alpha_bbox": [
+        0,
+        0,
+        1024,
+        1536
+      ]
+    },
+    "subject.png": {
+      "alpha_min": 0,
+      "alpha_max": 254,
+      "visible_fraction": 0.573404,
+      "alpha_bbox": [
+        0,
+        22,
+        1024,
+        1518
+      ]
+    },
+    "foreground-decoration.png": {
+      "alpha_min": 0,
+      "alpha_max": 254,
+      "visible_fraction": 0.086425,
+      "alpha_bbox": [
+        25,
+        151,
+        994,
+        1512
+      ]
+    },
+    "frame.png": {
+      "alpha_min": 0,
+      "alpha_max": 254,
+      "visible_fraction": 0.262697,
+      "alpha_bbox": [
+        0,
+        0,
+        1011,
+        1518
+      ]
+    }
+  },
+  "warnings": [],
+  "mask": {
+    "alpha_min": 0,
+    "alpha_max": 255,
+    "visible_fraction": 0.931175,
+    "alpha_bbox": [
+      0,
+      0,
+      1011,
+      1518
+    ],
+    "role": "auxiliary full-card effect mask; excluded from composite"
+  }
+}

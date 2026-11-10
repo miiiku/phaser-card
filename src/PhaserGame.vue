@@ -40,3 +40,20 @@ defineExpose({ scene, game });
 <template>
   <div id="game-container"></div>
 </template>
+
+<style scoped>
+/* Scale Manager 依据父容器的计算尺寸来缩放，父容器必须有明确的宽高。 */
+#game-container {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #000000;
+  touch-action: none;
+}
+
+#game-container :deep(canvas) {
+  display: block;
+}
+</style>

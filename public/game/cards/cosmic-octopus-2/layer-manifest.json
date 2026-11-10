@@ -1,0 +1,95 @@
+{
+  "canvas": {
+    "width": 1024,
+    "height": 1536
+  },
+  "order_back_to_front": [
+    "background.png",
+    "rear-decoration.png",
+    "subject.png",
+    "foreground-decoration.png",
+    "frame.png"
+  ],
+  "layers": {
+    "background.png": {
+      "alpha_min": 255,
+      "alpha_max": 255,
+      "visible_fraction": 1.0,
+      "alpha_bbox": [
+        0,
+        0,
+        1024,
+        1536
+      ]
+    },
+    "rear-decoration.png": {
+      "alpha_min": 0,
+      "alpha_max": 254,
+      "visible_fraction": 0.049808,
+      "alpha_bbox": [
+        500,
+        104,
+        924,
+        460
+      ]
+    },
+    "subject.png": {
+      "alpha_min": 0,
+      "alpha_max": 254,
+      "visible_fraction": 0.451309,
+      "alpha_bbox": [
+        9,
+        122,
+        1018,
+        1397
+      ]
+    },
+    "foreground-decoration.png": {
+      "alpha_min": 0,
+      "alpha_max": 254,
+      "visible_fraction": 0.021659,
+      "alpha_bbox": [
+        81,
+        1005,
+        946,
+        1292
+      ]
+    },
+    "frame.png": {
+      "alpha_min": 0,
+      "alpha_max": 254,
+      "visible_fraction": 0.262697,
+      "alpha_bbox": [
+        0,
+        0,
+        1011,
+        1518
+      ]
+    }
+  },
+  "warnings": [],
+  "mask": {
+    "alpha_min": 0,
+    "alpha_max": 255,
+    "visible_fraction": 0.931175,
+    "alpha_bbox": [
+      0,
+      0,
+      1011,
+      1518
+    ],
+    "role": "auxiliary full-card effect mask; excluded from composite"
+  },
+  "card_back": {
+    "alpha_min": 0,
+    "alpha_max": 255,
+    "visible_fraction": 0.931175,
+    "alpha_bbox": [
+      0,
+      0,
+      1011,
+      1518
+    ],
+    "role": "complete reverse-side asset; excluded from front composite"
+  }
+}

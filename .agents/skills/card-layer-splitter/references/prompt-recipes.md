@@ -32,6 +32,20 @@ Extract only the detached decorative effects that sit in front of the subject in
 Extract only the topmost card frame, bottom plaque, crest, and inseparable embedded card furniture from Image 1. Preserve their exact geometry, position, scale, material, color, highlights, and inner-edge shadow. Remove all central artwork, subject, background, and detached effects. Output a genuine transparent RGBA PNG on the full 1024x1536 canvas with the entire central window and outer unused regions transparent. Do not crop, recenter, thicken, redesign, or regenerate the frame, and do not paint a checkerboard.
 ```
 
+## Mask
+
+Do not generate the mask with an image model. After `frame.png` is normalized, run
+`scripts/create_mask_from_frame.py` to preserve the exact frame registration and fill its
+central opening deterministically. The resulting `mask.png` is solid white inside the
+complete card silhouette and transparent outside.
+
+## Card back
+
+Do not regenerate a supplied card-back design. Normalize it as an opaque full-canvas
+`card-back-source.png`, then run `scripts/apply_mask_to_card_back.py` so the delivered
+`card-back.png` inherits the exact alpha channel of `mask.png`. Inspect that masking did
+not clip ornament near the contour. The card back is excluded from the front composite.
+
 ## Targeted correction suffix
 
 Append this when correcting one failed layer:
